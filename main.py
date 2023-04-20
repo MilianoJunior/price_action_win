@@ -1,10 +1,116 @@
+import kivy
+kivy.require('2.0.0')
+from watchdog.events import FileSystemEventHandler
+from watchdog.observers import Observer
+from kivy.core.window import Window
+# from datetime import datetime
+from kivymd.app import MDApp
+# from typing import NoReturn
+from kivy.uix.button import Button
+import os
+import sys
+import subprocess
+# Minhas classes
+from libs.composite import Composite
+
+MODE = 'development'
+
+module_registration = ['main.py','composite.py']  # add modules that trigger reloading
+
+class KvHandler(FileSystemEventHandler):
+    def __init__(self, app, **kwargs):
+        super(KvHandler, self).__init__(**kwargs)
+        self.app = app
+
+    def on_modified(self, event):
+        ''' checks if there have been any change in the registered module '''
+        for module in module_registration:
+            if os.path.basename(event.src_path) == module:
+                python_executable = sys.executable
+                cmd_command = f'start cmd.exe /c "python main.py"'
+                subprocess.run(cmd_command, shell=True)
+                self.app.stop()
+                exit()
+
+def run(app: object):
+    ''' register the observer with the folder to observe - '''
+    o = Observer()
+    o.schedule(KvHandler(app), os.getcwd(), recursive=True)
+    o.start()
+
+class AppReload(MDApp):
+    def __init__(self, *args, **kwargs):
+        super(AppReload, self).__init__(*args, **kwargs)
+        Window.system_size = [1550, 900]
+        Window.top = 30
+        Window.left = 1920
+
+    def build(self):
+        self.theme_cls.theme_style = "Dark"
+        self.theme_cls.primary_palette = "Orange"  # "Purple", "Red"
+        # return Button(text='Clique aqui 1!')
+        return Composite()()
+
+    def on_start(self):
+        if MODE == 'development':
+            run(self)
+            
+    def on_stop(self):
+        # MDApp.get_running_app().stop()
+        print('On stop')
+
+if __name__ == "__main__":
+    app = AppReload()
+    app.run()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # -*- coding: utf-8 -*-
-import unittest
-from libs.tests.test_price_action import Test
+# import unittest
+# from libs.tests.test_price_action import Test
 
-Test()()
+# Test()()
 
 
+# import plotly.graph_objects as go
+
+# # Dados de exemplo (adicione mais dados OHLC conforme necessário)
+# data = [
+#     {
+#         "bid": 0.0,
+#         "ask": 0.0,
+#         "last": 107700.0,
+#         "volume": 1,
+#         "time_msc": 1681327800062,
+#         "flags": 4,
+#         "volume_real": 1.0,
+#     }
+# ]
+
+# # Preparar dados para o gráfico OHLC
+# x = [item["time_msc"] for item in data]
+# open_data = [item["bid"] for item in data]
+# high_data = [item["ask"] for item in data]
+# low_data = [item["bid"] for item in data]
+# close_data = [item["last"] for item in data]
+
+# # Criar e exibir o gráfico OHLC
+# fig = go.Figure(go.Ohlc(x=x, open=open_data, high=high_data, low=low_data, close=close_data))
+
+# fig.update_layout(title="Exemplo de Gráfico OHLC com Plotly", yaxis_title="Preço", xaxis_title="Tempo")
+
+# fig.show()
 
 
 '''
